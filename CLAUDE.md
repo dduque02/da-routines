@@ -96,3 +96,96 @@ Echeverri, Andrés Moreno).
 
 When a competitor is found ranking for any artist name in the roster,
 flag it as a high-priority threat.
+
+## Weekly Iteration & Persistence
+
+Each routine produces two artifacts every week, stored in the `reports/`
+directory and committed to the repo:
+
+1. **Presentation Excel** — `reports/<routine>_<YYYY-MM-DD>.xlsx`
+   Human-readable workbook for the team (the same multi-tab format
+   currently used for `Inteligencia_SEO_*.xlsx`).
+2. **Structured data sidecar** — `reports/<routine>_<YYYY-MM-DD>.json`
+   Machine-readable snapshot of the raw metrics. This is what enables
+   week-over-week comparison.
+
+`<routine>` is one of: `seo`, `competitive_intel`.
+
+### Required JSON schema — SEO routine
+
+```json
+{
+  "fecha": "YYYY-MM-DD",
+  "rutina": "seo",
+  "propio": {
+    "co": { "trafico": 0, "keywords": 0, "top10": 0, "costo_usd": 0 },
+    "us": { "trafico": 0, "keywords": 0, "top10": 0, "costo_usd": 0 },
+    "top_keywords_co": [ { "kw": "", "pos": 0, "vol": 0, "url": "" } ],
+    "top_keywords_us": [ { "kw": "", "pos": 0, "vol": 0, "url": "" } ],
+    "top_paginas_co": [ { "url": "", "trafico": 0, "keywords": 0 } ],
+    "top_paginas_us": [ { "url": "", "trafico": 0, "keywords": 0 } ]
+  },
+  "competidores": [
+    { "dominio": "", "trafico_co": 0, "keywords_co": 0,
+      "trafico_us": 0, "keywords_us": 0 }
+  ],
+  "brechas": [
+    { "kw": "", "vol": 0, "categoria": "", "competidor": "",
+      "pos_competidor": 0, "nivel": "Alta|Media|Baja" }
+  ],
+  "paginas_top_competencia": [
+    { "competidor": "", "mercado": "CO|US", "url": "",
+      "trafico": 0, "keyword_principal": "", "tipo": "" }
+  ],
+  "insights": [
+    { "titulo": "", "prioridad": "Alta|Media|Baja" }
+  ]
+}
+```
+
+### Required JSON schema — Competitive Intel routine
+
+```json
+{
+  "fecha": "YYYY-MM-DD",
+  "rutina": "competitive_intel",
+  "competidores": [
+    {
+      "nombre": "",
+      "actividad_digital": { "posts_nuevos": 0, "exposiciones_nuevas": 0 },
+      "menciones_artistas_roster": [],
+      "movimientos_estrategicos": [],
+      "patron_psicologico": ""
+    }
+  ],
+  "alertas": [
+    { "titulo": "", "prioridad": "Alta|Media|Baja", "competidor": "" }
+  ]
+}
+```
+
+### Iteration Rules (mandatory from week 2 onwards)
+
+Before generating any weekly report:
+
+1. **Read the most recent prior snapshot** from `reports/<routine>_*.json`
+   (highest date that is not today's). If none exists, it is the first run
+   — skip comparison and note this in the Excel.
+2. **Compute deltas vs. prior week** for every metric in the JSON.
+3. **Add a "Comparativo Semanal" tab to the Excel** as the second tab
+   (after the cover/summary), with these sections:
+   - Δ Tráfico orgánico CO/US (absoluto y %)
+   - Keywords ganadas (entraron al top 20)
+   - Keywords perdidas (salieron del top 20 o cayeron >5 posiciones)
+   - Brechas nuevas detectadas esta semana
+   - Brechas cerradas (donde la galería ahora rankea)
+   - Alertas nuevas vs. alertas resueltas
+   - Movimientos de competidores (tráfico ±10% requiere mención)
+4. **Highlight in the email draft** the 3 deltas más relevantes de la
+   semana antes de las oportunidades de contenido.
+
+After generating both artifacts:
+
+5. **Write both files** to `reports/` with the correct date in the filename.
+6. **Commit and push** to the current working branch so the next session
+   can find them.
