@@ -96,3 +96,60 @@ Echeverri, Andrés Moreno).
 
 When a competitor is found ranking for any artist name in the roster,
 flag it as a high-priority threat.
+
+## Weekly Intelligence Routine — Operational Notes
+These notes override the routine prompt's defaults wherever they
+conflict. Added 2026-07-13 after the total network-block incident.
+
+### Email delivery (draft-only, by design)
+- The Gmail connector in this environment is intentionally DRAFT-ONLY.
+  Do NOT treat the absence of a send tool as a failure and do not try
+  to work around it: create a Gmail draft of the weekly report and the
+  team sends it manually.
+- Recipients for the draft: davidduque@galeriaduquearango.com,
+  santiagoduque@galeriaduquearango.com, digital@galeriaduquearango.com,
+  desarrollo@galeriaduquearango.com (desarrollo@ matches historical
+  sends even though the routine prompt omits it).
+- Keep the exact subject prefix "🖼️ Weekly Gallery Intelligence — "
+  followed by the date: the sent email is next week's memory.
+- Drafts do not support attachments. Deliver the Excel by (a)
+  committing it to reports/ in this repo and (b) sending it to the
+  user via the file-delivery tool; the draft body must state where
+  the Excel lives.
+
+### Site access and 403 handling
+- If a gallery site returns HTTP 403, first check whether it is an
+  egress-policy block: curl -sS "$HTTPS_PROXY/__agentproxy/status"
+  and look for the domain under recentRelayFailures with
+  "connect_rejected".
+- A proxy policy block means the gallery is "NO VERIFICABLE (bloqueo
+  de red)" — NEVER report it as "No activity detected this week."
+  False "sin actividad" entries poison the following weeks' memory.
+- Findings recovered only through web search (no direct page load)
+  must be labeled lower-confidence in the Strategic Note.
+- Before escalating any multi-week threat that has only been seen via
+  search results, re-confirm it against the primary site. Lesson
+  learned: Ascaso's "Reviver" show was stale 2022 indexed content that
+  was reported as an active threat for several weeks.
+- If the block persists, flag it prominently in the email draft and in
+  the notification so the environment's network policy gets fixed.
+
+### Network policy allowlist (for the environment settings)
+The environment's network policy must allow these domains for the
+routine to work. If runs report proxy 403s, re-add them (with and
+without www) in the environment configuration at claude.ai/code:
+galerialacometa.com, galeriacasacuadrada.com, casasriegner.com,
+galeriaelmuseo.com, latinartcore.com, artoftheworldgallery.com,
+ascasogallery.com, galeriafreites.com, operagallery.com,
+gagosian.com, davidzwirner.com, hauserwirth.com, galerie-lelong.com,
+lissongallery.com, lehmannmaupin.com, perrotin.com
+
+### Dates
+- If the routine prompt arrives with unsubstituted placeholders like
+  {{DATE}} / {{DATE_MINUS_7}}, use today's date from the session
+  context; the reporting window is always the last 7 days.
+
+### Files
+- Save weekly Excel reports under reports/
+  (reports/Gallery_Intelligence_YYYY_MM_DD.xlsx), then commit and
+  push them to the designated branch.
